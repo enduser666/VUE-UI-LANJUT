@@ -1,231 +1,251 @@
-<template>
-    <div class="event-detail-page">
-      <button @click="$router.push('/browse/events')" class="btn-back">&larr; Back to Events</button>
+<script setup>
+import { useRoute, useRouter } from 'vue-router'
 
-      <div class="detail-header">
-        <div class="header-content">
-          <span class="event-tag">Community Event</span>
-          <h1>Community Gathering {{ $route.params.id }}</h1>
-          <div class="meta-info">
-            <div class="meta-item">
-              <span class="icon">📅</span>
-              <span>October 15, 2026</span>
-            </div>
-            <div class="meta-item">
-              <span class="icon">📍</span>
-              <span>Main Auditorium, City Center</span>
-            </div>
-            <div class="meta-item">
-              <span class="icon">👥</span>
-              <span>500+ Attendees</span>
-            </div>
-          </div>
-        </div>
+const route = useRoute()
+const router = useRouter()
+</script>
+
+<template>
+  <div class="event-detail-page">
+    <button @click="router.push('/browse/events')" class="btn-back">
+      &larr; Back to Events
+    </button>
+
+    <!-- DETAIL HEADER -->
+    <div class="detail-header">
+      <span class="event-tag">Workshop & Training</span>
+      <h1>Vue.js Mastery Workshop {{ route.params.id }}</h1>
+      <div class="meta-info">
+        <span class="meta-item">📅 October 12, 2026</span>
+        <span class="meta-item">📍 Tech Hub, Jakarta Pusat</span>
+        <span class="meta-item">👥 Quota: 150 Attendees</span>
+      </div>
+    </div>
+
+    <!-- ASYMMETRICAL CONTENT (2fr : 1fr) -->
+    <div class="detail-content grid-asymmetric">
+      <!-- MAIN DESCRIPTION (F-PATTERN) -->
+      <div class="main-desc">
+        <h2>About This Event</h2>
+        <p>
+          Bergabunglah dalam workshop pelatihan pengembangan web interface terbesar tahun ini, sebuah kolaborasi Gatherly dengan komunitas developer terkemuka. Acara ini dirancang secara komprehensif bagi praktisi front-end yang ingin memperdalam penguasaan teknologi web modern.
+        </p>
+        <p>
+          Kita akan membedah tantangan industri riil, arsitektur Single Page Application (SPA), serta praktik implementasi Layout System berstandar industri dengan prioritas utama pada visual hierarchy dan pengalaman pengguna yang responsif.
+        </p>
+
+        <h2>Event Agenda</h2>
+        <ul class="agenda-list">
+          <li><strong>09:00 AM</strong> Registration & QR Check-in Scanning</li>
+          <li><strong>10:00 AM</strong> Session 1: Vue Router & Navigation Fundamentals</li>
+          <li><strong>11:30 AM</strong> Coffee Break & Networking Session</li>
+          <li><strong>01:00 PM</strong> Session 2: Layout System & Grid Implementation</li>
+          <li><strong>03:00 PM</strong> Q&A & Closing Remarks</li>
+        </ul>
       </div>
 
-      <div class="detail-content">
-        <div class="main-desc">
-          <h2>About This Event</h2>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam in dui mauris. Vivamus hendrerit arcu
-            sed erat molestie vehicula. Sed auctor neque eu tellus rhoncus ut eleifend nibh porttitor. Ut in
-            nulla enim. Phasellus molestie magna non est bibendum non venenatis nisl tempor.
-          </p>
-          <p>
-            Suspendisse dictum feugiat nisl ut dapibus. Mauris iaculis porttitor posuere. Praesent id
-            metus massa, ut blandit odio. Proin quis tortor orci. Etiam at risus et justo dignissim
-            congue. Donec congue lacinia dui, a porttitor lectus condimentum laoreet. Nunc eu ullamcorper orci.
-          </p>
-
-          <h2>Agenda</h2>
-          <ul class="agenda-list">
-            <li><strong>09:00 AM</strong> - Registration & Welcome Coffee</li>
-            <li><strong>10:00 AM</strong> - Opening Keynote Speech</li>
-            <li><strong>11:30 AM</strong> - Networking Session</li>
-            <li><strong>01:00 PM</strong> - Closing Remarks</li>
-          </ul>
-        </div>
-        <div class="sidebar">
-          <div class="ticket-card">
-            <h3>Registration</h3>
-            <p class="price">Free</p>
-            <p class="ticket-desc">Secure your spot today before it runs out.</p>
-            <button class="btn-register">Register Now</button>
-            <p class="spots">Only 45 spots left!</p>
-          </div>
+      <!-- SIDEBAR (FOCAL POINT & STICKY PANE) -->
+      <div class="sidebar">
+        <div class="ticket-card sticky-pane">
+          <h3>Attendee Registration</h3>
+          <p class="price">Free</p>
+          <p class="ticket-desc">Secure your seat now before the quota is full.</p>
+          <button class="btn-register">Register Now</button>
+          <p class="spots">Only 12 seats left!</p>
         </div>
       </div>
     </div>
+  </div>
 </template>
 
 <style scoped>
+/* ==========================================================================
+   BACK BUTTON
+   ========================================================================== */
 .btn-back {
   background: none;
   border: none;
-  color: #666;
   font-size: 1rem;
-  font-weight: 500;
   cursor: pointer;
-  margin-bottom: 2rem;
-  transition: color 0.2s;
+  margin-bottom: var(--space-6);
+  color: var(--text-muted);
   padding: 0;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.2s;
 }
+
 .btn-back:hover {
-  color: #6644ff;
+  color: var(--primary);
 }
 
+/* ==========================================================================
+   DETAIL HEADER
+   ========================================================================== */
 .detail-header {
-  background: #fdfdfd;
-  border-radius: 20px;
-  border: 1px solid #f0f0f0;
-  padding: 4rem 3rem;
-  margin-bottom: 3rem;
-}
-
-.header-content {
-  max-width: 800px;
+  background: var(--bg-light);
+  border-radius: var(--space-4);
+  border: 1px solid var(--border-color);
+  padding: var(--space-12) var(--space-8);
+  margin-bottom: var(--space-8);
 }
 
 .event-tag {
   display: inline-block;
   background: rgba(102, 68, 255, 0.1);
-  color: #6644ff;
-  padding: 0.4rem 1rem;
+  color: var(--primary);
+  padding: var(--space-1) var(--space-4);
   border-radius: 50px;
   font-weight: 600;
   font-size: 0.9rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--space-4);
 }
 
-.header-content h1 {
-  color: #1c1948;
+h1 {
   font-size: 2.8rem;
-  margin-bottom: 2rem;
+  margin: 0 0 var(--space-4) 0;
   line-height: 1.2;
+  color: var(--text-main);
 }
 
 .meta-info {
   display: flex;
   flex-wrap: wrap;
-  gap: 2rem;
+  gap: var(--space-6);
 }
 
 .meta-item {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  color: #555;
+  color: var(--text-muted);
   font-weight: 500;
   font-size: 1.05rem;
 }
 
-.detail-content {
-  display: flex;
-  gap: 4rem;
+/* ==========================================================================
+   ASYMMETRICAL LAYOUT (2fr : 1fr):
+   Rasio asimetris 8:4 (66.6% konten vs 33.3% sidebar konversi) untuk
+   mengarahkan bobot visual utama ke penjelasan materi event sekaligus
+   menjaga panel aksi selalu mudah dijangkau.
+   ========================================================================== */
+.grid-asymmetric {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-12);
 }
 
-.main-desc {
-  flex: 2;
+@media (max-width: 900px) {
+  .grid-asymmetric {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
 }
 
+/* ==========================================================================
+   F-PATTERN:
+   Konten editorial diatur agar mata memindai secara horizontal pada
+   subheading (dengan aksen border-left primary) dan awal baris agenda
+   (dengan penanda waktu tebal di sisi kiri) sebelum bergerak vertikal.
+   ========================================================================== */
 .main-desc h2 {
-  color: #1c1948;
-  margin-bottom: 1.5rem;
+  margin: 0 0 var(--space-4) 0;
   font-size: 1.8rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.main-desc h2::before {
-  content: "";
-  display: block;
-  width: 20px;
-  height: 4px;
-  background: #6644ff;
-  border-radius: 2px;
+  color: var(--text-main);
+  border-left: 4px solid var(--primary);
+  padding-left: var(--space-2);
 }
 
 .main-desc p {
-  color: #444;
   line-height: 1.8;
-  margin-bottom: 1.5rem;
+  margin: 0 0 var(--space-6) 0;
   font-size: 1.05rem;
+  color: var(--text-main);
 }
 
 .agenda-list {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 0 0 var(--space-8) 0;
 }
 
 .agenda-list li {
-  padding: 1rem 0;
-  border-bottom: 1px solid #f0f0f0;
-  color: #444;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-muted);
   font-size: 1.05rem;
 }
 
-.sidebar {
-  flex: 1;
+.agenda-list li strong {
+  color: var(--text-main);
+  margin-right: var(--space-2);
 }
 
+/* ==========================================================================
+   FOCAL POINT & SQUINT TEST:
+   .ticket-card dan .btn-register didesain menjadi elemen paling mencolok
+   di sisi kanan halaman. Warna primer kontras tinggi dan harga tebal
+   memastikan fokus konversi tetap dominan dalam uji squint test.
+   ========================================================================== */
 .ticket-card {
-  background: white;
-  padding: 2.5rem;
-  border-radius: 16px;
-  border: 1px solid #f0f0f0;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+  background: #ffffff;
+  padding: var(--space-8);
+  border-radius: var(--space-4);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
   text-align: center;
-  position: sticky;
-  top: 100px;
 }
 
 .ticket-card h3 {
-  color: #1c1948;
   font-size: 1.5rem;
-  margin-bottom: 1rem;
+  margin: 0 0 var(--space-2) 0;
+  color: var(--text-main);
 }
 
 .price {
   font-size: 2.8rem;
   font-weight: 800;
-  color: #6644ff;
-  margin-bottom: 0.5rem;
+  color: var(--primary);
+  margin: 0 0 var(--space-2) 0;
 }
 
 .ticket-desc {
-  color: #666;
-  margin-bottom: 2rem;
+  color: var(--text-muted);
+  margin: 0 0 var(--space-6) 0;
+  line-height: 1.5;
 }
 
 .btn-register {
   width: 100%;
-  padding: 1.2rem;
-  background: #1c1948;
-  color: white;
+  padding: var(--space-4);
+  background: var(--primary);
+  color: #ffffff;
   border: none;
   border-radius: 12px;
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background-color 0.2s, transform 0.2s;
+  box-shadow: 0 4px 15px rgba(102, 68, 255, 0.3);
 }
 
 .btn-register:hover {
-  background: #6644ff;
+  background: var(--primary-hover);
+  transform: translateY(-2px);
 }
 
 .spots {
-  margin-top: 1.5rem;
+  margin-top: var(--space-4);
+  margin-bottom: 0;
   color: #e63946;
   font-weight: 600;
   font-size: 0.95rem;
 }
 
-@media (max-width: 900px) {
-  .detail-content { flex-direction: column; }
-  .detail-header { padding: 3rem 2rem; }
-  .header-content h1 { font-size: 2.2rem; }
+/* ==========================================================================
+   STICKY PANE:
+   Membuat panel tiket tetap menempel di viewport atas (top: 100px) saat
+   pengguna menggulir (scroll) membaca detail deskripsi dan agenda yang panjang.
+   ========================================================================== */
+.sticky-pane {
+  position: sticky;
+  top: 100px;
 }
 </style>
