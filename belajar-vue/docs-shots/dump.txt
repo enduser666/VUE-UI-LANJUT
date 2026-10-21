@@ -1,0 +1,751 @@
+
+==============================================================================
+FILE: sections_a.py
+==============================================================================
+
+--- def bab2 ---
+[item] Props adalah mekanisme aliran data dari parent ke child. Contohnya, komponen AppButton menerima prop variant untuk menentukan gaya tombol, dan komponen EventCard menerima prop event berisi detail acara.
+[item] Emits adalah mekanisme aliran data dari child ke parent. Komponen EventCard memancarkan event view-detail beserta payload id agar halaman induk dapat mengarahkan pengguna ke halaman detail.
+[item] Slot adalah mekanisme penyisipan konten fleksibel. Komponen AppCard hanya menyediakan kerangka visual, sedangkan isi kartu sepenuhnya ditentukan oleh pemanggilnya.
+[item] v-model adalah jalan pintas atas kombinasi props dan emits yang bekerja secara dua arah. Komponen SearchBar dan CategoryFilter mengimplementasikannya melalui prop modelValue dan event update:modelValue.
+[h1] BAB II  TINJAUAN PUSTAKA
+[h2] 2.1  Vue.js dan Composition API
+[para] Vue.js adalah framework front-end progresif yang bekerja pada lapisan tampilan (view layer). Kata progresif pada dokumentasi resmi Vue.js bermakna bahwa framework ini dapat diadopsi secara bertahap: mulai dari satu berkas HTML dengan satu berkas JavaScript, hingga menjadi arsitektur aplikasi lengkap dengan sistem routing dan manajemen state.
+[para] Composition API yang diperkenalkan pada Vue 3 menyediakan cara mengorganisasi logika komponen secara eksplisit. Setiap komponen didefinisikan melalui fungsi setup() yang menerima props, lalu mengembalikan nilai yang akan diekspos ke template. Keunggulan utama Composition API terletak pada fleksibilitasnya: logika yang bersifat reusable dapat dipisah ke dalam composable, sehingga tidak terikat pada pemanggilan siklus hidup komponen tertentu. Pada laporan ini, logika pengelolaan data event dipisah ke dalam berkas src/composables/useEvents.js.
+[para] Tiga API reaktif yang paling sering digunakan dalam implementasi ini adalah ref, computed, dan watch. ref digunakan untuk menyimpan nilai yang dapat berubah dan dapat di-two-way binding pada input. computed digunakan untuk menghasilkan nilai turunan yang dihitung otomatis, misalnya daftar event aktif. watch digunakan untuk melakukan efek samping, yaitu menyimpan state ke localStorage setiap kali data berubah.
+[h2] 2.2  Vite sebagai Development Server dan Build Tool
+[para] Vite adalah build tool untuk ekosistem JavaScript modern yang dikembangkan oleh tim yang sama dengan Vue.js. Dua keunggulan utama Vite dalam konteks praktikum adalah kecepatan start-up development server dan keluaran produksi yang ringkas.
+[para] Pada fase pengembangan, Vite tidak memproses seluruh berkas aplikasi secara prematur. Sebaliknya, Vite menyajikan berkas source langsung melalui native ES Module sehingga start-up server hampir seketika. Pada fase build, Vite menggunakan Rollup untuk melakukan code splitting, tree-shaking, dan minification. Mekanisme ini terlihat langsung dari hasil build pada Tabel 4.4, setiap halaman dipecah menjadi berkas JavaScript terpisah, sementara bundle utama tetap berukuran ringkas.
+[h2] 2.3  Vue Router dan Konsep Single Page Application
+[para] Vue Router adalah pustaka routing resmi untuk Vue.js yang menyediakan mekanisme navigasi sisi klien. Dengan Vue Router, aplikasi dapat berjalan sebagai Single Page Application (SPA), yaitu aplikasi yang hanya memuat satu dokumen HTML dan melakukan penggantian tampilan di sisi klien tanpa memuat ulang seluruh halaman dari server.
+[para] Konsekuensi dari pendekatan SPA adalah berkurangnya permintaan jaringan pada setiap perpindahan halaman, sehingga kemungkinan aplikasi terasa jauh lebih cepat dan cair. Namun SPA menuntut pengembang menyusun peta rute secara eksplisit, sehingga umumnya disertai komponen navigasi seperti Navbar dan Breadcrumb agar pengguna tidak kehilangan konteks posisi.
+[h2] 2.4  Hierarki Parent–Child dalam Navigasi
+[para] Pada aplikasi web berskala menengah, sekumpulan halaman tidak selalu berada pada level yang sama. Sebagian halaman merupakan kelompok yang memuat sejumlah halaman turunan, misalnya halaman Browse yang memuat daftar event dan halaman kategori. Relasi seperti ini dalam Vue Router direpresentasikan melalui properti children pada objek rute.
+[para] Implementasi hierarki Parent–Child memiliki beberapa manfaat penting. Pertama, outlet dari parent dapat langsung merender children tanpa mengubah URL, sehingga URL tetap mencerminkan posisi pengguna secara utuh. Kedua, komponen Breadcrumb dapat menelusuri properti route.matched untuk membentuk jejak navigasi otomatis. Ketiga, menu navigasi dapat dibangun dari satu sumber kebenaran, yaitu array konfigurasi rute, sehingga struktur menu dan struktur URL tidak pernah berbeda.
+[h2] 2.5  Komponen Reusable, Props, Emits, dan Slot
+[para] Komponen dalam Vue.js adalah unit pembangun antarmuka yang dapat dipakai ulang. Empat mekanisme komunikasi antar komponen yang digunakan dalam laporan ini adalah props, emits, slot, dan v-model.
+[item] Props adalah mekanisme aliran data dari parent ke child. Contohnya, komponen AppButton menerima prop variant untuk menentukan gaya tombol, dan komponen EventCard menerima prop event berisi detail acara.
+[item] Emits adalah mekanisme aliran data dari child ke parent. Komponen EventCard memancarkan event view-detail beserta payload id agar halaman induk dapat mengarahkan pengguna ke halaman detail.
+[item] Slot adalah mekanisme penyisipan konten fleksibel. Komponen AppCard hanya menyediakan kerangka visual, sedangkan isi kartu sepenuhnya ditentukan oleh pemanggilnya.
+[item] v-model adalah jalan pintas atas kombinasi props dan emits yang bekerja secara dua arah. Komponen SearchBar dan CategoryFilter mengimplementasikannya melalui prop modelValue dan event update:modelValue.
+[h2] 2.6  State Persisten pada localStorage
+[para] localStorage adalah penyimpanan sisi klien yang menyimpan data dalam bentuk string. Pada prototipe aplikasi tanpa server, localStorage lazim dipakai untuk mengganti basis data sementara agar data tetap tersedia setelah halaman dimuat ulang. Pada proyek ini, composable useEvents menyimpan seluruh data event pada kunci gatherly_events dan menggunakan watcher dengan opsi deep untuk menyinkronkan perubahan setiap kali state diperbarui.
+[item] Single Page Application (SPA)
+[item] Multi Page Application (MPA)
+[item] Satu dokumen HTML, tampilan diganti di sisi klien
+[item] Setiap halaman merupakan dokumen HTML terpisah
+[item] Dilakukan oleh Vue Router di sisi klien
+[item] Dilakukan oleh server melalui navigasi URL penuh
+[item] Transisi cepat tanpa reload penuh
+[item] Setiap perpantian memicu permintaan dokumen baru
+[item] Dijaga di memori aplikasi, bertahan selama sesi
+[item] Tidak ada state sisi klien yang terpusat
+[item] Memerlukan pengelolaan rute dan orientasi pengguna
+[item] Lebih sederhana, namun berpindah antar halaman
+
+--- def bab3 ---
+[h1] BAB III  ANALISIS DAN PERANCANGAN
+[h2] 3.1  Capaian Pembelajaran Mata Kuliah
+[para] Modul 0 dan Modul 1 menetapkan capaian pembelajaran berikut, yang menjadi dasar penilaian keberhasilan implementasi pada Bab IV dan Bab V.
+[h2] 3.2  Analisis Kebutuhan Fungsional
+[para] Aplikasi Gatherly dikembangkan sebagai platform komunitas event yang memiliki dua sisi penggunaan, yaitu sisi publik untuk pengunjung dan sisi organizer untuk pengelola acara. Analisis kebutuhan fungsionalnya dirangkum pada Tabel 3.2, sedangkan pemetaan terhadap capaian pembelajaran disajikan pada Tabel 3.1.
+[h2] 3.3  Peta Situs (Site Map)
+[para] Site Map pada aplikasi Gatherly disusun berdasarkan dua kelompok navigasi. Kelompok pertama berada di bawah Layout publik dan terdiri atas Home, About, Browse, dan Contact. Browse berperan sebagai Destinasi Induk (Parent) yang memuat dua halaman turunan, yaitu Event List dan Category, dengan Event List kembali memiliki turunan berupa halaman detail event berparameter. Kelompok kedua adalah Dasbor Organizer yang memakai layout terpisah dan memuat halaman Overview serta Manajemen Event.
+[figure] diagram_site_map.png Gambar 3.1  Peta Situs (Site Map) Aplikasi Gatherly beserta Hierarki Parent–Child
+[h2] 3.4  Struktur Folder Project
+[para] Pemisahan file pada proyek ini mengikuti empat lapis yang saling jelas, yaitu entry point, layout, views, dan components. Struktur lengkap direktori src/ disajikan berikut ini.
+[code] src/
+├─  main.js                    Entry point aplikasi
+├─  App.vue                    Root component (memuat <RouterView />)
+├─  assets/
+│   ├─  base.css               Token warna bawaan tema Vue
+│   ├─  main.css               Token desain Gatherly + reset global
+│   └─  logo.svg               Logo bawaan project
+├─  router/
+│   └─  index.js               Konfigurasi Vue Router dan tabel rute
+├─  layouts/
+│   ├─  App.vue                Layout publik (Navbar + Breadcrumb)
+│   └─  DashboardLayout.vue    Layout dasbor organizer (sidebar)
+├─  stores/
+│   └─  counter.js             Store Pinia bawaan generator
+├─  composables/
+│   └─  useEvents.js           State event reaktif + persistensi localStorage
+├─  components/
+│   ├─  app/
+│   │   ├─  Navbar.vue         Navigasi utama bertingkat
+│   │   └─  Breadcrumb.vue     Location Indicator
+│   ├─  event/
+│   │   ├─  EventCard.vue      Kartu ringkasan event
+│   │   ├─  SearchBar.vue      Input pencarian (v-model)
+│   │   └─  CategoryFilter.vue Filter kategori (v-model)
+│   └─  ui/
+│       ├─  AppButton.vue      Tombol dengan variant
+│       ├─  AppCard.vue        Wrapper kartu dengan slot
+│       └─  AppModal.vue       Modal konfirmasi
+└─  views/
+    ├─  Home.vue               Destinasi utama
+    ├─  About.vue              Destinasi lateral
+    ├─  Contact.vue            Destinasi lateral
+    ├─  Browse.vue             Destinasi induk (parent)
+    ├─  Category.vue           Destinasi anak (sibling)
+    ├─  EventList.vue          Destinasi penelusuran
+    ├─  EventDetail.vue        Ujung Destinasi
+    ├─  Dasboard.vue           Berkas lama (tidak lagi dipakai router)
+    ├─  Dashboard.vue          Ringkasan statistik organizer
+    └─  EventManagement.vue    Pengelolaan event
+[h2] 3.5  Arsitektur Lapisan Aplikasi
+[para] Seluruh aliran data pada aplikasi mengikuti arah satu dari atas ke bawah. Perubahan URL dicocokkan oleh router, hasil pencocokan diteruskan ke layout, layout menugaskan outlet untuk merender view, view menggunakan komponen reusable dan composable, dan perubahan state pada composable diteruskan ke localStorage. Arsitektur tersebut divisualisasikan pada Gambar 3.2.
+[figure] diagram_arsitektur.png Gambar 3.2  Arsitektur Lapisan Aplikasi Vue.js pada Proyek belajar-vue
+[h2] 3.6  Perancangan Hierarki Navigasi
+[para] Array menus pada Navbar.vue menjadi satu sumber kebenaran bagi seluruh tautan navigasi. Setiap elemen menu memiliki properti name, path, dan children opsional. Elemen yang memiliki children akan menampilkan indikator panah dan dropdown, sedangkan elemen level kedua yang juga memiliki children akan menampilkan submenu di sisi kanan. Perancangan ini disajikan pada Gambar 3.3.
+[figure] diagram_hierarki_nav.png Gambar 3.3  Perancangan Hierarki Navigasi pada Komponen Navbar.vue
+[h2] 3.7  Perancangan Komponen Reusable
+[para] Komponen reusable pada proyek ini dikelompokkan ke dalam tiga folder berdasarkan domain penggunaannya, yaitu app untuk komponen tingkat aplikasi, event untuk komponen domain acara, dan ui untuk komponen generik. Pengelompokan ini memudahkan penelusuran dan mencegah duplikasi. Kontrak antarkomponen dirangkum pada Tabel 3.3 dan Gambar 3.4.
+[figure] diagram_komponen.png Gambar 3.4  Pengelompokan Komponen Reusable pada Direktori src/components
+[h2] 3.8  Alur Setup Environment Modul 0
+[para] Rangkaian persiapan yang dilakukan praktikan mengikuti alur pada handout Modul 0, yaitu persiapan perangkat, instalasi Visual Studio Code, instalasi Node.js dan npm, pemasangan ekstensi Vue (Official), pembuatan kerangka project, serta penjalankan server pengembangan. Alur tersebut diringkas pada Gambar 3.5.
+[figure] diagram_alur_modul0.png Gambar 3.5  Alur Setup Environment Praktikum Modul 0
+[h2] 3.9  Daftar Rute Aplikasi
+[para] Tabel rute pada src/router/index.js merupakan definisi formal dari peta situs. Seluruh rute menggunakan lazy import melalui fungsi dinamis import() agar berkas view tidak dimuat sebelum benar-benar dibutuhkan. Rincian setiap rute disajikan pada Tabel 3.3.
+[h2] 3.10  Spesifikasi Teknis Proyek
+[item] Capaian Pembelajaran Mata Kuliah
+[item] Memahami relasi konseptual antara Site Map, View, dan Router
+[item] Menerapkan hierarki Parent–Child di dalam struktur aplikasi web
+[item] Mengimplementasikan pola pergerakan pengguna berupa transisi navigasi
+[item] Merancang komponen Navbar interaktif menggunakan router-link
+[item] Merancang komponen Location Indicator (Breadcrumb) untuk orientasi pengguna
+[item] Menjalankan satu aplikasi Vue utuh yang memuat berbagai halaman pendukung
+[item] Menyiapkan environment pengembangan dan mengonfigurasi project Vue.js
+[item] Menampilkan halaman utama berisi hero section dan fitur unggulan
+[item] Mengalihkan navigasi antar halaman tanpa reload penuh
+[item] router-link pada Navbar.vue
+[item] Menampilkan struktur menu bertingkat sampai dua level
+[item] Dropdown dan submenu pada Navbar.vue
+[item] Menampilkan jejak posisi pengguna pada halaman bersarang
+[item] Breadcrumb.vue berbasis route.matched
+[item] Mencantumkan katalog event aktif beserta filter pencarian
+[item] EventList.vue, SearchBar.vue
+[item] Menyaring event berdasarkan kategori
+[item] Menampilkan detail event beserta tombol pendaftaran
+[item] Menampilkan halaman 404 kustom untuk event yang tidak ditemukan
+[item] Blok v-else pada EventDetail.vue
+[item] Menyediakan formulir publik untuk menghubungi penyelenggara
+[item] Menampilkan statistik event pada dasbor organizer
+[item] Mengelola siklus hidup event: membuat, menuntaskan, dan menghapus
+[item] Meminta konfirmasi sebelum tindakan merusak data
+[item] Menyimpan data event agar tetap tersedia setelah reload
+[item] useEvents.js dengan localStorage
+[item] variant (primary | secondary)
+[item] Tombol generik dengan gaya yang seragam
+[item] Pembungkus kartu yang menerima slot
+[item] isOpen, title, message, confirmText, cancelText
+[item] Dialog konfirmasi dengan efek transisi
+[item] Kartu ringkasan event pada katalog publik
+[item] categories (Array), modelValue (String)
+[item] Location Indicator otomatis
+[item] layouts/App.vue → views/Home.vue
+[item] layouts/App.vue → views/About.vue
+[item] layouts/App.vue → views/Browse.vue
+[item] layouts/App.vue → views/Contact.vue
+[item] layouts/DashboardLayout.vue → views/Dashboard.vue
+[item] Vue 3.5 (Composition API, script setup)
+[item] Vue Router 5 dengan createWebHistory
+[item] Pinia 4 (store bawaan) dan composable useEvents
+[item] Vite 8 dengan plugin @vitejs/plugin-vue
+[item] Prettier 3.9.6 (semi: false, singleQuote: true, printWidth: 100)
+[item] JavaScript ES Module dengan alias path @/
+[item] localStorage pada kunci gatherly_events
+[item] Design token CSS berbasis custom property pada src/assets/main.css
+[item] Node.js v22.15.1, npm 10.9.2, Vite 8.3.1
+[item] Chromium (engine 138), lebar viewport 1000–1219 piksel
+
+==============================================================================
+FILE: sections_b.py
+==============================================================================
+
+--- def bab4 ---
+[h1] BAB IV  IMPLEMENTASI
+[h2] 4.1  Modul 0: Instalasi dan Konfigurasi Environment
+[para] Tahap pertama yang dilakukan adalah penyiapan environment pengembangan. Visual Studio Code dipasang sebagai editor teks utama, sedangkan Node.js dan npm berperan sebagai penyedia runtime JavaScript. Sesuai panduan modul, versi Long Term Support (LTS) dipilih karena dianggap paling stabil untuk pembelajar. Ekstensi Vue (Official) kemudian dipasang agar editor dapat menyorot sintaks berkas .vue dan memberikan petunjuk kode.
+[para] Setelah environment siap, kerangka project dibuat dengan perintah npm create vue@latest. Generator akan menampilkan sejumlah pertanyaan konfigurasi, dan jawaban yang dipilih pada praktikum ini dirangkum pada Tabel 4.1.
+[para] Setelah generator selesai, langkah berikutnya adalah masuk ke direktori project, mengunduh seluruh dependensi, merapikan format kode, dan menjalankan server pengembangan. Perintah yang digunakan beserta fungsinya dirangkum berikut ini.
+[code] cd belajar-vue
+npm install
+npm run format
+npm run dev
+[para] Development server Vite berjalan pada alamat http://localhost:5173 secara default. Selama server aktif, setiap perubahan pada berkas sumber akan langsung tercermin di browser melalui fitur hot reload. Proses server dihentikan dengan kombinasi tombol Ctrl + C pada terminal.
+[h2] 4.2  Inisialisasi Aplikasi dan Root Component
+[para] Berkas src/main.js merupakan pintu gerbang aplikasi. Di sinilah Vue, Pinia, dan Vue Router dipasang pada instance aplikasi melalui metode app.use(). Perintah app.use(router) inilah yang mengaktifkan sistem navigasi sisi klien, tanpa perintah tersebut komponen router-link tidak akan berfungsi.
+[code] import './assets/main.css'
+
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+
+import App from './App.vue'
+import router from './router'
+
+const app = createApp(App)
+
+app.use(createPinia())
+app.use(router)
+
+app.mount('#app')
+[para] Berkas src/App.vue merupakan root component. Isinya sangat sederhana, yaitu hanya satu elemen RouterView yang berfungsi sebagai area dinamis tempat konten halaman disisipkan otomatis oleh router.
+[code] <script setup>
+import { RouterView } from 'vue-router'
+</script>
+
+<template>
+  <RouterView />
+</template>
+[h2] 4.3  Layout dan Outlet
+[para] Agar Navbar dan Breadcrumb tidak perlu dipanggil berulang kali pada setiap halaman, keduanya diletakkan pada berkas layout. Layout publik memuat Navbar di bagian atas dan Breadcrumb di atas area konten, sedangkan area konten itu sendiri berupa router-view yang menjadi tempat halaman anak dirender.
+[code] <script setup>
+import Navbar from '@/components/app/Navbar.vue';
+import Breadcrumb from '@/components/app/Breadcrumb.vue';
+</script>
+
+<template>
+  <div class="app-layout">
+    <Navbar />
+    <main class="main-content">
+      <Breadcrumb />
+      <router-view />
+    </main>
+  </div>
+</template>
+[h2] 4.4  Pengaturan Rute
+[para] Berkas src/router/index.js adalah peta aplikasi. Setiap URL yang diketik pengguna dicocokkan dengan komponen View yang berkaitan. Struktur children dipakai untuk membentuk hierarki Parent–Child, dan setiap rute diberi metadata breadcrumb agar komponen Breadcrumb dapat membentuk jejak navigasi secara otomatis.
+[code] const routes = [
+  {
+    path: '/',
+    component: AppLayout,
+    children: [
+      {
+        path: '',
+        name: 'home',
+        component: () => import('@/views/Home.vue'),
+        meta: { breadcrumb: 'Home' }
+      },
+      {
+        path: 'about',
+        name: 'about',
+        component: () => import('@/views/About.vue'),
+        meta: { breadcrumb: 'About' }
+      },
+      {
+        path: 'browse',
+        name: 'browse',
+        component: () => import('@/views/Browse.vue'),
+        meta: { breadcrumb: 'Browse' },
+        redirect: '/browse/events',
+        children: [
+          {
+            path: 'events',
+            name: 'events',
+            component: () => import('@/views/EventList.vue'),
+            meta: { breadcrumb: 'Event List' }
+          },
+          {
+            path: 'events/:id',
+            name: 'event-detail',
+            component: () => import('@/views/EventDetail.vue'),
+            meta: { breadcrumb: 'Event Detail' }
+          },
+          {
+            path: 'category',
+            name: 'category',
+            component: () => import('@/views/Category.vue'),
+            meta: { breadcrumb: 'Category' }
+          }
+        ]
+      },
+      {
+        path: 'contact',
+        name: 'contact',
+        component: () => import('@/views/Contact.vue'),
+        meta: { breadcrumb: 'Contact' }
+      }
+    ]
+  },
+  {
+    path: '/dashboard',
+    component: () => import('@/layouts/DashboardLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'dashboard-overview',
+        component: () => import('@/views/Dashboard.vue'),
+        meta: { title: 'Dashboard' }
+      },
+      {
+        path: 'events',
+        name: 'dashboard-events',
+        component: () => import('@/views/EventManagement.vue')
+      }
+    ]
+  }
+]
+[para] Tiga hal penting dapat dibaca langsung dari kode di atas. Pertama, seluruh komponen view diimpor secara dinamis melalui fungsi import(), sehingga berkas view tidak diunduh sebelum dibutuhkan. Kedua, properti redirect pada rute browse menetapkan arah default ketika pengguna membuka /browse. Ketiga, rute dengan parameter :id memungkinkan satu komponen menampilkan banyak entri data berbeda.
+[h2] 4.5  Komponen Navbar
+[para] Navbar merupakan mekanisme transisi. Alih-alih menggunakan tag a HTML yang memuat ulang halaman, komponen ini memakai router-link sehingga perpindahan tampilan terjadi secara instan di sisi klien. Komponen juga menambahkan efek scroll seperti perubahan background dan blur ketika halaman digulir melebihi 10 piksel, serta penandaan tautan aktif melalui pembandingan route.path.
+[code] const menus = [
+  { name: 'Home', path: '/' },
+  { name: 'About', path: '/about' },
+  {
+    name: 'Browse',
+    path: '/browse',
+    children: [
+      {
+        name: 'Event List',
+        path: '/browse/events',
+        children: [{ name: 'Event Detail (Sample)', path: '/browse/events/1' }],
+      },
+      { name: 'Category', path: '/browse/category' },
+    ],
+  },
+  { name: 'Contact', path: '/contact' },
+  { name: 'Organizer Dashboard', path: '/dashboard' },
+]
+
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 10
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
+[para] Penandaan tautan aktif dituliskan secara eksplisit agar halaman utama tetap ditandai aktif ketika pengguna berada pada root, sekaligus agar tautan Browse tetap ditandai ketika pengguna berada pada salah satu halamannya.
+[code] :class="{
+  active:
+    route.path === menu.path ||
+    (menu.path !== '/' && route.path.startsWith(menu.path)),
+}
+[para] Dropdown dan submenu pada Gambar 4.1 dibentuk sepenuhnya melalui CSS dengan aturan :hover. Latar dropdown menggunakan warna abu terang agar kontras dengan navbar berwarna gelap, sedangkan submenu level kedua muncul di sisi kanan induknya dengan posisi absolut pada 100 persen dari lebar induk.
+[figure] navbar_dropdown.png Gambar 4.1  Tampilan Dropdown dan Submenu pada Komponen Navbar.vue
+[h2] 4.6  Komponen Breadcrumb
+[para] Breadcrumb berfungsi sebagai Location Indicator. Komponen ini menelusuri route.matched untuk memperoleh seluruh rantai rute yang sedang diakses, mengambil nilai breadcrumb dari metadata setiap rute, dan menyisipkan butir Home di awal bila belum present. Untuk rute berparameter, nilai path digantikan dengan path aktual agar tautan bekerja dengan benar.
+[code] const breadcrumbs = computed(() => {
+  const matched = route.matched;
+  let crumbs = matched.map((m) => {
+    let path = m.path;
+    if (path.includes(':')) {
+      path = route.path;
+    }
+    return { name: m.name, path: path, meta: m.meta };
+  }).filter(m => m.meta && m.meta.breadcrumb);
+
+  if (route.name === 'event-detail') {
+    crumbs.splice(crumbs.length - 1, 0, {
+      path: '/browse/events',
+      meta: { breadcrumb: 'Event List' }
+    });
+  }
+
+  if (crumbs.length === 0 || crumbs[0].meta.breadcrumb !== 'Home') {
+    crumbs.unshift({ path: '/', meta: { breadcrumb: 'Home' } });
+  }
+
+  return crumbs;
+});
+[h2] 4.7  Halaman Destinasi Utama dan Lateral
+[para] Halaman Home merupakan destinasi utama. Hero section dirancang agar nilai utama aplikasi berada di area above the fold, dengan judul berukuran 4rem, teks pendukung 1,25rem, dan satu tombol aksi utama berwarna kontras. Di bawahnya terdapat features section dengan tata letak grid adaptif yang secara otomatis menyesuaikan jumlah kolom sesuai lebar layar.
+[figure] home.png Gambar 4.2  Tampilan Halaman Utama (Home.vue) pada Hero Section
+[para] Halaman About dan Contact merupakan pergerakan lateral pada menu Navbar, yaitu halaman yang setara level dengan Home. Halaman Contact memuat informasi kantor beserta formulir kontak yang menggunakan event submit.prevent agar halaman tidak melakukan reload.
+[figure] about.png Gambar 4.3  Tampilan Halaman About (About.vue)
+[figure] contact.png Gambar 4.4  Tampilan Halaman Contact (Contact.vue) beserta formulir
+[h2] 4.8  Halaman Browse, Category, dan Event List
+[para] Halaman Browse bersifat unik karena merupakan destinasi induk yang memiliki router-view di dalamnya sendiri. Tugasnya adalah membungkus halaman-halaman anaknya, yaitu Event List, Event Detail, dan Category. Halaman ini juga menjadi tempat redirect default ketika pengguna membuka /browse.
+[figure] browse_events.png Gambar 4.5  Tampilan Halaman Browse (Parent) dan Event List (Child)
+[para] Halaman Event List menampilkan katalog event aktif. Pencarian dan filter kategori bekerja secara reaktif terhadap computed filteredEvents, sehingga setiap perubahan input langsung menyaring kartu tanpa perlu tombol tambahan.
+[code] const filteredEvents = computed(() => {
+  return activeEvents.value.filter(event => {
+    const q = searchQuery.value.toLowerCase();
+    const matchSearch =
+      event.title.toLowerCase().includes(q) ||
+      event.loc.toLowerCase().includes(q);
+    const matchCat =
+      selectedCategory.value === 'All' || event.cat === selectedCategory.value;
+    return matchSearch && matchCat;
+  });
+});
+[figure] browse_category.png Gambar 4.6  Tampilan Halaman Category (Category.vue)
+[h2] 4.9  Halaman Detail Event
+[para] Halaman EventDetail merupakan ujung destinasi dalam struktur navigasi. Halaman ini membaca parameter id dari route.params, mencarinya pada state event, lalu menampilkan informasi lengkap beserta panel pendaftaran yang menempel (sticky). Apabila event tidak ditemukan, komponen menampilkan blok 404 kustom beserta tombol untuk kembali ke katalog.
+[figure] event_detail.png Gambar 4.7  Tampilan Halaman Detail Event (EventDetail.vue)
+[h2] 4.10  Dashboard dan Manajemen Event
+[para] Dashboard Organizer menyediakan ringkasan statistik event dalam bentuk tiga kartu metrik dan satu tabel rekap. Terdapat pula tombol pintas menuju halaman manajemen event.
+[figure] dashboard.png Gambar 4.8  Tampilan Dashboard Organizer beserta metrik dan tabel rekap
+[para] Halaman Manajemen Event menyediakan tiga tab: Active Events, Create Event, dan Completed Events. Masing-masing tab mengelola satu tahap siklus hidup sebuah acara. Formulir pembuatan memvalidasi keberadaan judul, tanggal, lokasi, dan deskripsi sebelum data disimpan.
+[figure] dashboard_events.png Gambar 4.9  Tampilan Halaman Manajemen Event (EventManagement.vue)
+[figure] create_event_form.png Gambar 4.10  Tampilan Formulir Pembuatan Event Baru
+[h2] 4.11  Komponen Reusable dan Modal Konfirmasi
+[para] Komponen ui mengemas elemen antarmuka generik agar konsisten di seluruh aplikasi. AppButton menyediakan dua varian gaya, AppCard berfungsi sebagai pembungkus dengan slot, sedangkan AppModal menyediakan dialog konfirmasi dengan efek transisi opacity, efek blur pada lapisan gelap, serta penutupan otomatis ketika area di luar dialog diklik.
+[code] <script setup>
+defineProps({
+  isOpen: { type: Boolean, default: false },
+  title: { type: String, default: 'Action Confirmation' },
+  message: { type: String, default: 'Are you sure you want to proceed?' },
+  confirmText: { type: String, default: 'Yes, Proceed' },
+  cancelText: { type: String, default: 'Cancel' }
+});
+defineEmits(['confirm', 'close']);
+</script>
+
+<template>
+  <Transition name="modal-fade">
+    <div v-if="isOpen" class="modal-overlay" @click.self="$emit('close')">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-icon">!</div>
+          <h3 class="modal-title">{{ title }}</h3>
+        </div>
+        <div class="modal-body">
+          <p class="modal-message">{{ message }}</p>
+          <slot />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" @click="$emit('close')">{{ cancelText }}</button>
+          <button class="btn-confirm" @click="$emit('confirm')">{{ confirmText }}</button>
+        </div>
+      </div>
+    </div>
+  </Transition>
+</template>
+[figure] modal_confirm.png Gambar 4.11  Tampilan Modal Konfirmasi Aksi pada Komponen AppModal.vue
+[h2] 4.12  State Event dan Persistensi
+[para] Seluruh data event dikelola pada composable useEvents.js. Composable ini menyimpan array event pada sebuah ref, kemudian menyediakan nilai turunan berupa jumlah event, event aktif, dan event selesai. Setiap mutasi data menggunakan fungsi create, complete, dan delete yang tersentralisasi sehingga konsisten di seluruh pemanggil.
+[code] const STORAGE_KEY = 'gatherly_events';
+
+const savedData = localStorage.getItem(STORAGE_KEY);
+const events = ref(savedData ? JSON.parse(savedData) : defaultEvents);
+
+watch(
+  events,
+  (newEvents) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newEvents));
+  },
+  { deep: true }
+);
+
+export function useEvents() {
+  const totalEvents = computed(() => events.value.length);
+  const activeEvents = computed(() => events.value.filter(e => !e.done));
+  const completedEvents = computed(() => events.value.filter(e => e.done));
+
+  const createEvent = (eventData) => {
+    const newEvent = {
+      id: Date.now(),
+      title: eventData.title,
+      date: eventData.date,
+      loc: eventData.loc.startsWith('📍') ? eventData.loc : `📍 ${eventData.loc}`,
+      cat: eventData.cat,
+      quota: Number(eventData.quota) || 100,
+      price: eventData.price || 'Free',
+      desc: eventData.desc,
+      done: false
+    };
+    events.value.unshift(newEvent);
+    return newEvent;
+  };
+
+  const completeEvent = (id) => {
+    const target = events.value.find(e => e.id === Number(id));
+    if (target) { target.done = true; }
+  };
+
+  const deleteEvent = (id) => {
+    const index = events.value.findIndex(e => e.id === Number(id));
+    if (index !== -1) { events.value.splice(index, 1); }
+  };
+
+  const getEventById = (id) =>
+    events.value.find(e => e.id === Number(id));
+
+  return { events, totalEvents, activeEvents, completedEvents,
+           createEvent, completeEvent, deleteEvent, getEventById };
+}
+[h2] 4.13  Sistem Desain Token
+[para] Agar tampilan konsisten, proyek memakai custom property CSS sebagai design token. Token warna, tekstur, dan spasi didefinisikan satu kali pada src/assets/main.css dan dirujuk oleh seluruh komponen melalui bentuk var(--nama-token). Sistem spasi mengadopsi kelipatan delapan piksel agar ritme vertikal dan horizontal tetap seragam.
+[code] :root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  --primary: #6644ff;
+  --primary-hover: #5533ee;
+  --text-main: #1c1948;
+  --text-muted: #666666;
+  --text-white: #ffffff;
+  --bg-light: #fdfdfd;
+  --bg-gray: #f4f4f5;
+  --border-color: #e4e4e7;
+  --nav-bg: #1c1948;
+}
+[h2] 4.14  Ringkasan File Sumber dan Hasil Build
+[para] Build produksi dijalankan dengan perintah npm run build. Proses selesai tanpa galat dalam waktu 404 milidetik dan menghasilkan 22 berkas hasil build yang terpecah otomatis berdasarkan rute, seperti pada Tabel 4.4.
+[item] Hasil pada Mesin Praktikan
+[item] Mengikuti nama project pada modul
+[item] Menggunakan JavaScript agar lebih mudah dipahami
+[item] Menggunakan sintaks template standar Vue
+[item] Menjadi dasar navigasi dan pemetaan Site Map
+[item] Menyediakan manajemen state terpusat
+[item] Modul tidak berfokus pada pengujian otomatis
+[item] Tidak diperlukan pada tahap ini
+[item] Mempertahankan konfigurasi tetap sederhana
+[item] Menjaga format kode tetap rapi dan konsisten
+[item] Replace Prettier with Oxfmt
+[item] Mempertahankan fokus pada konsep inti Vue
+[item] Vue 3.6 (Release Candidate)
+[item] Menggunakan versi framework yang stabil
+[item] Mempertahankan contoh kode bawaan sebagai referensi
+[item] Home, About, Contact, Browse, Category, EventList, EventDetail, Dasboard (legacy), Dashboard, EventManagement
+[item] EventCard, SearchBar, CategoryFilter
+[item] AppButton, AppCard, AppModal
+[item] App (publik), DashboardLayout (organizer)
+[item] Tabel rute dan konfigurasi router
+[item] base.css, main.css, logo.svg
+[item] _plugin-vue_export-helper-*.js
+
+--- def bab5 ---
+[item] Mekanisme hierarki Parent–Child bekerja konsisten. Rute /browse/events/:id menghasilkan breadcrumb empat tingkat tanpa perlu konfigurasi tambahan pada setiap halaman, karena komponen Breadcrumb hanya bergantung pada route.matched dan metadata rute.
+[item] Rasio kode pada View menjadi sangat kecil. Halaman EventList hanya sekitar 40 baris, sedangkan logika penyaringan, pemformatan tanggal, dan navigasi detail dipindahkan ke composable maupun komponen turunan.
+[item] Filter dan pencarian bekerja reaktif tanpa perlu tombol tambahan. Hal iniasersembunyi karena nilai pencarian dan kategori disimpan pada ref, sementara hasil penyaringan dihitung oleh computed.
+[item] Validasi formulir masih pada tataran antarmuka. Pesan galat ditampilkan melalui alert box di dalam halaman, bukan melalui validasi sisi server, sehingga masih ada ruang perbaikan pada modul lanjutan.
+[item] Modal konfirmasi berjalan seperti yang dirancang, termasuk penutupan otomatis ketika area di luar dialog diklik.
+[h1] BAB V  PENGUJIAN DAN HASIL
+[h2] 5.1  Strategi Pengujian
+[para] Pengujian dilakukan dengan pendekatan black-box terhadap aplikasi yang sedang berjalan pada development server Vite. Setiap rute diakses secara langsung melalui alamatnya, kemudian struktur DOM diperiksa untuk memastikan halaman terender dengan benar. Untuk pengujian yang bersifat interaktif, seperti pencarian, filter kategori, publikasi event, dan konfirmasi modal, aksi dijalankan secara terprogram lalu dampaknya diamati pada jumlah elemen yang ditampilkan.
+[para] Data uji berupa empat event contoh yang diisikan pada localStorage dengan kunci gatherly_events, yaitu tiga event aktif dan satu event selesai. Seluruh pengujian dicatat pada Tabel 5.1.
+[h2] 5.2  Hasil Pengujian
+[h2] 5.3  Pembahasan Hasil Pengujian
+[para] Seluruh empat belas skenario pengujian menghasilkan status berhasil, sehingga tidak ditemukan cacat fungsional pada cakupan Modul 0 dan Modul 1. Beberapa temuan perlu dicatat sebagai berikut.
+[item] Mekanisme hierarki Parent–Child bekerja konsisten. Rute /browse/events/:id menghasilkan breadcrumb empat tingkat tanpa perlu konfigurasi tambahan pada setiap halaman, karena komponen Breadcrumb hanya bergantung pada route.matched dan metadata rute.
+[item] Rasio kode pada View menjadi sangat kecil. Halaman EventList hanya sekitar 40 baris, sedangkan logika penyaringan, pemformatan tanggal, dan navigasi detail dipindahkan ke composable maupun komponen turunan.
+[item] Filter dan pencarian bekerja reaktif tanpa perlu tombol tambahan. Hal iniasersembunyi karena nilai pencarian dan kategori disimpan pada ref, sementara hasil penyaringan dihitung oleh computed.
+[item] Validasi formulir masih pada tataran antarmuka. Pesan galat ditampilkan melalui alert box di dalam halaman, bukan melalui validasi sisi server, sehingga masih ada ruang perbaikan pada modul lanjutan.
+[item] Modal konfirmasi berjalan seperti yang dirancang, termasuk penutupan otomatis ketika area di luar dialog diklik.
+[h2] 5.4  Verifikasi Kesesuaian dengan Capaian Pembelajaran
+[item] Capaian Pembelajaran Mata Kuliah
+[item] Membuka beranda dan memeriksa tautan navigasi
+[item] Navbar memuat seluruh menu dan logo aplikasi
+[item] 8 tautan navigasi terbaca, logo Gatherly tampil, judul hero terbaca
+[item] Membuka /about dan memeriksa penanda menu aktif
+[item] Menu About ditandai aktif dan breadcrumb terbentuk
+[item] Satu menu aktif (About), breadcrumb “Home / About”
+[item] Membuka /browse/events/:id
+[item] Breadcrumb menunjukkan empat tingkat navigasi
+[item] Breadcrumb “Home / Browse / Event List / Event Detail”, status Open Registration, harga Rp 350.000
+[item] Mengetik “meetup” pada kolom pencarian
+[item] Kartu event tersaring sesuai kata kunci
+[item] Jumlah kartu turun dari 3 menjadi 1, namely “Tech Meetup: Scaling Frontend Architecture”; setelah dikosongkan kembali menjadi 3
+[item] Memilih kategori “Workshop”
+[item] Hanya event berkategori Workshop yang tampil
+[item] Jumlah kartu turun dari 3 menjadi 1 dengan label WORKSHOP
+[item] Mengakses /browse/events/999999
+[item] Blok “404 - Event Not Found” beserta tombol kembali tampil
+[item] Metrik dan tabel rekap sesuai jumlah data
+[item] Total Events 4, Active Events 3, Completed Events 1, tabel memuat 4 baris
+[item] Memeriksa persistensi state
+[item] Data event tersimpan pada localStorage
+[item] Kunci gatherly_events berisi 4 event, 1 di antaranya berstatus done
+[item] Memeriksa perilaku Navbar saat digulir
+[item] Navbar melekat di atas dan menu tetap rapi
+[item] position: sticky dengan top 0 px, nav-menu display flex gap 40 px
+[item] Mempublish event baru melalui formulir
+[item] Event tersimpan dan katalog publik bertambah
+[item] Alert “Event published successfully and is now live!” tampil, jumlah data pada storage menjadi 5
+[item] Memastikan event baru tampil di katalog publik
+[item] Event baru muncul pada daftar
+[item] Empat kartu tampil dengan “Uji Otomatis Praktikum” di posisi teratas
+[item] Mengirim formulir tanpa mengisi kolom wajib
+[item] Validasi menampilkan pesan galat
+[item] Alert “Please fill in all required fields before publishing the event!” tampil dan data tidak bertambah
+[item] Memilih tombol Complete Event
+[item] Modal konfirmasi tampil sebelum tindakan dijalankan
+[item] Modal menampilkan judul “Complete Event?” beserta nama event yang dituju
+[item] Menjalankan build produksi
+[item] npm run build selesai dalam 404 ms, 22 berkas hasil build terbentuk
+[item] Memahami relasi Site Map, View, dan Router
+[item] Peta Situs pada Gambar 3.1 dan Tabel Rute 3.4
+[item] Menerapkan hierarki Parent–Child
+[item] Properti children pada src/router/index.js dan pengujian TC-03
+[item] Mengimplementasikan pola pergerakan pengguna
+[item] Transisi router-link dan tombol kembali pada EventDetail.vue
+[item] Merancang Navbar interaktif berbasis router-link
+[item] Komponen Navbar.vue beserta dropdown dua tingkat pada Gambar 4.1
+[item] Merancang Location Indicator (Breadcrumb)
+[item] Komponen Breadcrumb.vue dan pengujian TC-02 serta TC-03
+[item] Menjalankan aplikasi Vue utuh dengan berbagai halaman
+[item] Sembilan rute aktif dan 22 berkas hasil build pada Tabel 4.4
+[item] Menyiapkan environment dan mengonfigurasi project Vue.js
+[item] Rangkaian perintah pada Kode 4.1 dan verifikasi Tabel 4.2
+
+--- def bab6 ---
+[item] Persiapan environment pada Modul 0 berhasilyelexecute dengan lengkap. Visual Studio Code, Node.js v22.15.1, npm 10.9.2, dan ekstensi Vue (Official) terpasang dengan benar, generator create-vue berhasil membentuk kerangka project belajar-vue, dan development server Vite dapat dijalankan serta dihentikan melalui npm run dev dan Ctrl + C.
+[item] Konsep Site Map berhasil diterjemahkan menjadi hierarki rute Parent–Child pada src/router/index.js. Sembilan rute aktif terdaftar, dengan Browse sebagai Destinasi Induk dan Event Detail sebagai ujung destinasi berparameter.
+[item] Komponen Navbar dan Breadcrumb berhasil dirancang sesuai konsep transisi dan orientasi. Pengujian TC-01 sampai TC-03 membuktikan bahwa penandaan menu aktif dan pembentukan jejak navigasi bekerja otomatis pada setiap tingkat kedalaman rute.
+[item] Struktur aplikasi yang terpisah antara layout, views, dan components menghasilkan basis kode yang ringkas dan mudah dikembangkan. Sembilan halaman yang masing-masing hanya tersusun atas beberapa ratus baris kode, sementara logika utama berada pada composable useEvents.js.
+[item] Seluruh 14 skenario pengujian black-box berhasil dilalui dan build produksi selesai tanpa galat dalam waktu 404 milidetik, sehingga aplikasi memenuhi capaian pembelajaran Modul 0 dan Modul 1.
+[item] Validasi formulir sebaiknya dipindahkan ke lapisan composable atau modul validasi terpisah agar dapat dipakai ulang pada seluruh formulir, bukan hanya pada halaman manajemen event.
+[item] Data event yang masih bergantung pada localStorage sebaiknya dipindahkan ke API backend agar dapat diakses lintas perangkat dan oleh banyak pengguna secara bersamaan.
+[item] Pengujian otomatis dengan Vitest dan Playwright perlu ditambahkan pada modul lanjutan agar verifikasi reaktivitas dan alur navigasi tidak bergantung pada pemeriksaan manual.
+[item] Halaman About dan Category saat ini masih memakai data contoh statis. Keduanya dapat disambungkan dengan state yang sama seperti EventList agar seluruh aplikasi benar-benar konsisten.
+[item] Aset ikon yang masih berupa karakter teks pada beberapa komponen sebaiknya diganti dengan pustaka ikon vektor agar konsistensi visual lebih terjaga.
+[h1] BAB VI  KESIMPULAN DAN SARAN
+[h2] 6.1  Kesimpulan
+[para] Berdasarkan hasil implementasi dan pengujian, laporan ini dapat menyimpulkan beberapa hal sebagai berikut.
+[item] Persiapan environment pada Modul 0 berhasilyelexecute dengan lengkap. Visual Studio Code, Node.js v22.15.1, npm 10.9.2, dan ekstensi Vue (Official) terpasang dengan benar, generator create-vue berhasil membentuk kerangka project belajar-vue, dan development server Vite dapat dijalankan serta dihentikan melalui npm run dev dan Ctrl + C.
+[item] Konsep Site Map berhasil diterjemahkan menjadi hierarki rute Parent–Child pada src/router/index.js. Sembilan rute aktif terdaftar, dengan Browse sebagai Destinasi Induk dan Event Detail sebagai ujung destinasi berparameter.
+[item] Komponen Navbar dan Breadcrumb berhasil dirancang sesuai konsep transisi dan orientasi. Pengujian TC-01 sampai TC-03 membuktikan bahwa penandaan menu aktif dan pembentukan jejak navigasi bekerja otomatis pada setiap tingkat kedalaman rute.
+[item] Struktur aplikasi yang terpisah antara layout, views, dan components menghasilkan basis kode yang ringkas dan mudah dikembangkan. Sembilan halaman yang masing-masing hanya tersusun atas beberapa ratus baris kode, sementara logika utama berada pada composable useEvents.js.
+[item] Seluruh 14 skenario pengujian black-box berhasil dilalui dan build produksi selesai tanpa galat dalam waktu 404 milidetik, sehingga aplikasi memenuhi capaian pembelajaran Modul 0 dan Modul 1.
+[h2] 6.2  Saran
+[item] Validasi formulir sebaiknya dipindahkan ke lapisan composable atau modul validasi terpisah agar dapat dipakai ulang pada seluruh formulir, bukan hanya pada halaman manajemen event.
+[item] Data event yang masih bergantung pada localStorage sebaiknya dipindahkan ke API backend agar dapat diakses lintas perangkat dan oleh banyak pengguna secara bersamaan.
+[item] Pengujian otomatis dengan Vitest dan Playwright perlu ditambahkan pada modul lanjutan agar verifikasi reaktivitas dan alur navigasi tidak bergantung pada pemeriksaan manual.
+[item] Halaman About dan Category saat ini masih memakai data contoh statis. Keduanya dapat disambungkan dengan state yang sama seperti EventList agar seluruh aplikasi benar-benar konsisten.
+[item] Aset ikon yang masih berupa karakter teks pada beberapa komponen sebaiknya diganti dengan pustaka ikon vektor agar konsistensi visual lebih terjaga.
+
+--- def back_matter ---
+[h1] DAFTAR PUSTAKA
+[item] Vue.js. (2024). Vue.js Documentation: The Progressive JavaScript Framework. Diambil dari https://vuejs.org/guide/ pada 2026.
+[item] Vue Router. (2024). Vue Router Documentation: Official Router for Vue.js. Diambil dari https://router.vuejs.org/ pada 2026.
+[item] Vite. (2024). Vite Guide: Getting Started and Build Tool Configuration. Diambil dari https://vite.dev/guide/ pada 2026.
+[item] Vue.js. (2024). Vue.js Composition API FAQ. Diambil dari https://vuejs.org/guide/extras/composition-api-faq.html pada 2026.
+[item] Mozilla Developer Network. (2024). Using Web Storage. Diambil dari https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage pada 2026.
+[item] Mozilla Developer Network. (2024). CSS Grid Layout. Diambil dari https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout pada 2026.
+[item] Tim Asisten Praktikum. (2026). Modul Praktikum: Modul 0 dan Modul 1 Pengembangan UI Lanjut. Program Studi Sistem Informasi, Fakultas Rekayasa Industri, Universitas Telkom.
+[item] OpenCode. (2026). Dokumentasi Resmi OpenCode. Diambil dari https://opencode.ai/docs/ pada 2026.
+[h1] LAMPIRAN
+[h2] Lampiran A  Perintah Terminal yang Digunakan
+[code] # Verifikasi environment
+node -v
+npm -v
+
+# Membuat kerangka project
+npm create vue@latest
+
+# Masuk ke direktori project dan mengunduh dependensi
+cd belajar-vue
+npm install
+
+# Merapikan format kode
+npm run format
+
+# Menjalankan development server
+npm run dev
+# Alamat: http://localhost:5173/
+
+# Menghentikan development server
+Ctrl + C
+
+# Build produksi
+npm run build
+
+# Pratinjau hasil build
+npm run preview
+[h2] Lampiran B  Berkas package.json
+[code] {
+  "name": "belajar-vue",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "format": "prettier --write --experimental-cli src/"
+  },
+  "dependencies": {
+    "pinia": "^4.0.3",
+    "vue": "^3.5.42",
+    "vue-router": "^5.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.8",
+    "prettier": "3.9.6",
+    "vite": "^8.2.2",
+    "vite-plugin-vue-devtools": "^8.2.1"
+  },
+  "engines": {
+    "node": "^22.18.0 || >=24.12.0"
+  }
+}
+[h2] Lampiran C  Konfigurasi Editor dan Format Kode
+[code] // .prettierrc.json
+{
+  "$schema": "https://json.schemastore.org/prettierrc",
+  "semi": false,
+  "singleQuote": true,
+  "printWidth": 100
+}
+
+// jsconfig.json
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}
+
+// vite.config.js
+export default defineConfig({
+  plugins: [vue(), vueDevTools()],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
+})
+
+==============================================================================
+FILE: build_report.py
+==============================================================================
+[para] LAPORAN PRAKTIKUM
+[para] MATA KULIAH PENGEMBANGAN UI LANJUT
+[para] MODUL 0 & MODUL 1
+[para] INSTALASI, KONFIGURASI, SERTA STRUKTUR APLIKASI DAN NAVIGASI PADA VUE.JS
+[para] (Studi Implementasi pada Aplikasi “Gatherly” — Platform Komunitas Event)
+[para] PROGRAM STUDI S1 SISTEM INFORMASI
+[para] FAKULTAS REKAYASA INDUSTRI
+[para] UNIVERSITAS TELKOM
+[para] 2026
+[para] DAFTAR IDENTITAS LAPORAN
+[item] Modul 0 (Instalasi dan Konfigurasi Vue.js) dan Modul 1 (Struktur Aplikasi dan Navigasi dalam Vue.js)
+[item] Modul Praktikum — Modul 0 & 1 Pengembangan UI Lanjut, Tim Asisten Praktikum, Tahun Ajaran 2026/2027
+[item] belajar-vue — Aplikasi Gatherly (Platform Komunitas Event)
+[item] C:\Users\HP\Documents\P UI 2\belajar-vue
+[item] Azriel Sabiq — 102042300059 — SI-KH-23-05
+[item] Vue 3.5, Vue Router 5, Pinia 4, Vite 8, JavaScript ES Module
+[item] Berhasil (npm run build selesai tanpa galat)
+[h1] DAFTAR ISI
+[h1] DAFTAR GAMBAR
+[h1] DAFTAR TABEL
+[h1] BAB I  PENDAHULUAN
+[h2] 1.1  Latar Belakang
+[para] Perkembangan teknologi antarmuka web telah mengubah cara manusia mengakses dan mengelola informasi. Aplikasi berbasis web modern tidak lagi sekadar menampilkan dokumen statis, melainkan menyediakan pengalaman interaktif yang dinamis, cepat, dan konsisten pada berbagai perangkat. Salah satu framework yang paling banyak digunakan dalam ekosistem tersebut adalah Vue.js.
+[para] Vue.js merupakan framework front-end progresif yang dirancang oleh Evan You. Karakteristik utamanya terletak pada pendekatan reaktif dan deklaratif: pengembang cukup mendeskripsikan tampilan yang dikehendaki pada kondisi tertentu, sedangkan framework yang bertanggung jawab melacak perubahan state dan otomatis memperbarui antarmuka yang ditampilkan. Pada versi 3, Vue.js memperkenalkan Composition API berupa susunan setup() yang memberi keleluasaan pengorganisasian logika komponen sekaligus menutup keterbatasan Options API yang lazim digunakan pada Vue 2.
+[para] Pada sisi toolchain, Vite berperan sebagai development server sekaligus build tool. Berbeda dengan bundler konvensional yang harus memproses seluruh berkas aplikasi sebelum halaman dapat disajikan, Vite memanfaatkan native ES Module sehingga proses start-up development server menjadi jauh lebih cepat. Kombinasi Vue.js dan Vite kemudian menjadi fondasi yang lazim dipakai pada praktikum pemrograman antarmuka web modern, termasuk pada mata kuliah Pengembangan UI Lanjut.
+[para] Dalam konteks mata kuliah Pengembangan UI Lanjut, modul pertama (Modul 0) berfokus pada penyiapan environment pengembangan sehingga praktikan dapat membuat, menjalankan, dan menghentikan server lokal secara mandiri. Modul kedua (Modul 1) kemudian berfokus pada struktur aplikasi dan navigasi, yaitu penerjemahan konsep Site Map menjadi kode yang benar-benar berjalan melalui Vue Router, dengan penekanan pada hierarki Parent–Child, komponen Navbar sebagai alat transportasi pengguna, dan Breadcrumb sebagai penunjuk arah.
+[para] Praktikum ini mendokumentasikan proses tersebut secara utuh, mulai dari instalasi Visual Studio Code, Node.js, dan npm, pembuatan kerangka project dengan generator create-vue, pengimplementasian hierarki Parent–Child pada src/router/index.js, hingga konstruksi komponen Navbar dan Breadcrumb beserta seluruh halaman destinasi pendukungnya. Sebagai kasus studi, project yang digunakan bernama belajar-vue dengan identitas produk Gatherly, sebuah platform komunitas event yang memadukan katalog publik dengan dasbor organizer.
+[h2] 1.2  Identifikasi Masalah
+[para] Berdasarkan kondisi awal praktikan, beberapa persoalan yang umum ditemukan pada perkuliahan Pengembangan UI Lanjut adalah sebagai berikut.
+[h2] 1.3  Rumusan Masalah
+[para] Berdasarkan identifikasi masalah di atas, rumusan masalah pada praktikum ini adalah:
+[h2] 1.4  Tujuan
+[para] Tujuan dari penyusunan laporan praktikum ini adalah:
+[h2] 1.5  Manfaat
+[h2] 1.6  Batasan Masalah
