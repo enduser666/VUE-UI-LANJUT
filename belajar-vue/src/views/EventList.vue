@@ -1,211 +1,72 @@
 <script setup>
-/* DATA LISTING EVENTS */
-const events = [
-  {
-    id: 1,
-    title: 'Vue.js Mastery Workshop',
-    date: 'Oct 12, 2026',
-    loc: '📍 Tech Hub, Jakarta',
-    cat: 'Workshop',
-    desc: 'Learn advanced Vue 3 concepts, Composition API, and state management to build high-performance web applications interactively.'
-  },
-  {
-    id: 2,
-    title: 'National Tech Meetup',
-    date: 'Oct 15, 2026',
-    loc: '📍 Main Auditorium, City Center',
-    cat: 'Meetup',
-    desc: 'A gathering of hundreds of developers and tech enthusiasts to share the latest industry trends and expand professional networks.'
-  },
-  {
-    id: 3,
-    title: 'Startup Pitch Competition',
-    date: 'Nov 02, 2026',
-    loc: '📍 Innovation Center',
-    cat: 'Competition',
-    desc: 'Watch the best local startup founders pitch their innovative ideas live in front of a panel of renowned investors.'
-  },
-  {
-    id: 4,
-    title: 'UI/UX Design Sprint',
-    date: 'Nov 10, 2026',
-    loc: '📍 Creative Studio',
-    cat: 'Workshop',
-    desc: 'A hands-on session on designing user interfaces by implementing layout systems and visual hierarchy principles.'
-  },
-  {
-    id: 5,
-    title: 'Digital Marketing Seminar',
-    date: 'Nov 20, 2026',
-    loc: '📍 Grand Hotel Hall',
-    cat: 'Seminar',
-    desc: 'An in-depth seminar dissecting modern digital marketing strategies, from SEO optimization to user conversion tactics.'
-  },
-  {
-    id: 6,
-    title: 'Community Leaders Summit',
-    date: 'Dec 05, 2026',
-    loc: '📍 Gatherly HQ',
-    cat: 'Conference',
-    desc: 'An exclusive year-end conference for community leaders to formulate sustainable ecosystem development strategies.'
-  }
-]
+import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useEvents } from '@/composables/useEvents';
+import EventCard from '@/components/event/EventCard.vue';
+import SearchBar from '@/components/event/SearchBar.vue';
+import CategoryFilter from '@/components/event/CategoryFilter.vue';
+import AppButton from '@/components/ui/AppButton.vue';
+
+const router = useRouter();
+const { activeEvents } = useEvents();
+
+const searchQuery = ref('');
+const selectedCategory = ref('All');
+const categories = ['All', 'Workshop', 'Meetup', 'Competition', 'Seminar', 'Conference'];
+
+const filteredEvents = computed(() => {
+  return activeEvents.value.filter(event => {
+    const q = searchQuery.value.toLowerCase();
+    const matchSearch = event.title.toLowerCase().includes(q) || event.loc.toLowerCase().includes(q);
+    const matchCat = selectedCategory.value === 'All' || event.cat === selectedCategory.value;
+    return matchSearch && matchCat;
+  });
+});
+
+const handleViewDetail = (id) => {
+  router.push(`/browse/events/${id}`);
+};
 </script>
 
 <template>
   <div class="event-list-page">
-    <!-- Header Section -->
     <div class="header-section">
       <h2 class="section-title">Upcoming Events</h2>
       <p class="section-desc">Discover workshops, seminars, tech meetups, and competitions near you.</p>
     </div>
 
-    <!-- ADAPTIVE GRID & COMMON REGIONS / PROXIMITY -->
-    <div class="event-grid">
-      <div class="event-card" v-for="event in events" :key="event.id">
-        <div class="event-body">
-          <div class="event-meta">
-            <span class="event-date">{{ event.date }}</span>
-            <span class="event-category">{{ event.cat }}</span>
-          </div>
-          <h3 class="event-title">{{ event.title }}</h3>
-          <p class="event-loc">{{ event.loc }}</p>
-          <p class="event-desc">{{ event.desc }}</p>
-          <div class="card-footer">
-            <router-link :to="`/browse/events/${event.id}`" class="btn-link">
-              View Event Details &rarr;
-            </router-link>
-          </div>
-        </div>
+    <div class="filters-section">
+      <SearchBar v-model="searchQuery" />
+      <CategoryFilter :categories="categories" v-model="selectedCategory" />
+    </div>
+
+    <div v-if="filteredEvents.length > 0" class="event-grid">
+      <EventCard v-for="event in filteredEvents" :key="event.id" :event="event" @view-detail="handleViewDetail" />
+    </div>
+
+    <div v-else class="empty-state">
+      <div class="empty-icon">🗓️</div>
+      <h3>No Events Available Yet</h3>
+      <p>
+        There are currently no active events scheduled. Are you an organizer?
+        Publish and manage your first event today through the Dashboard!
+      </p>
+      <div class="empty-action">
+        <AppButton variant="primary" @click="router.push('/dashboard')">Go to Organizer Dashboard &rarr;</AppButton>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-/* ==========================================================================
-   HEADER SECTION
-   ========================================================================== */
-.header-section {
-  margin-bottom: var(--space-8);
-}
-
-.section-title {
-  font-size: 2.2rem;
-  color: var(--text-main);
-  margin: 0 0 var(--space-2) 0;
-}
-
-.section-desc {
-  color: var(--text-muted);
-  font-size: 1.1rem;
-  margin: 0;
-}
-
-/* ==========================================================================
-   ADAPTIVE GRID:
-   Menggunakan repeat(auto-fill, minmax(320px, 1fr)) agar jumlah kolom
-   secara otomatis menyesuaikan (3 -> 2 -> 1 kolom) dengan viewport layar
-   tanpa memerlukan deklarasi media query berulang.
-   ========================================================================== */
-.event-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: var(--space-6);
-}
-
-/* ==========================================================================
-   COMMON REGIONS (GESTALT PRINCIPLE):
-   Setiap kartu event dibatasi oleh container fisik (border, background putih,
-   border-radius var(--space-4), dan shadow lembut) sehingga mata manusia
-   mengelompokkannya sebagai satu kesatuan informasi yang utuh.
-   ========================================================================== */
-.event-card {
-  background: #ffffff;
-  border-radius: var(--space-4);
-  border: 1px solid var(--border-color);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.event-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.06);
-}
-
-/* ==========================================================================
-   PROXIMITY (LAW OF PROXIMITY):
-   Mengatur jarak spasial terukur (base-8) antar elemen data di dalam kartu.
-   Elemen yang berhubungan erat (meta tag, judul & lokasi) memiliki jarak
-   yang lebih rapat dibandingkan antar grup konten.
-   ========================================================================== */
-.event-body {
-  padding: var(--space-6);
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.event-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-4);
-}
-
-.event-date {
-  background: rgba(102, 68, 255, 0.1);
-  color: var(--primary);
-  padding: var(--space-1) var(--space-2);
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.85rem;
-}
-
-.event-category {
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.event-title {
-  font-size: 1.4rem;
-  color: var(--text-main);
-  margin: 0 0 var(--space-2) 0;
-}
-
-.event-loc {
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  margin: 0 0 var(--space-4) 0;
-}
-
-.event-desc {
-  color: var(--text-muted);
-  line-height: 1.6;
-  font-size: 0.95rem;
-  margin: 0 0 var(--space-6) 0;
-  flex-grow: 1;
-}
-
-.card-footer {
-  border-top: 1px solid var(--border-color);
-  padding-top: var(--space-4);
-}
-
-.btn-link {
-  display: inline-block;
-  color: var(--text-main);
-  font-weight: 600;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.btn-link:hover {
-  color: var(--primary);
-}
+.header-section { margin-bottom: var(--space-8); }
+.section-title { font-size: 2.2rem; margin-bottom: var(--space-2); }
+.section-desc { color: var(--text-muted); font-size: 1.1rem; }
+.filters-section { display: flex; gap: var(--space-4); margin-bottom: var(--space-6); flex-wrap: wrap; }
+.event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-6); }
+.empty-state { text-align: center; padding: var(--space-12) var(--space-8); color: var(--text-muted); background: white; border-radius: var(--space-4); border: 1px dashed var(--border-color); max-width: 600px; margin: var(--space-8) auto; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+.empty-icon { font-size: 3.5rem; margin-bottom: var(--space-3); }
+.empty-state h3 { font-size: 1.5rem; color: var(--text-main); margin-bottom: var(--space-2); }
+.empty-state p { line-height: 1.6; margin-bottom: var(--space-6); font-size: 1rem; }
+.empty-action { display: flex; justify-content: center; }
 </style>
