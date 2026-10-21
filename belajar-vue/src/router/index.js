@@ -59,9 +59,14 @@ const routes = [
     children: [
       {
         path: '',
-        name: 'dashboard',
-        component: () => import('@/views/Dasboard.vue'),
+        name: 'dashboard-overview',
+        component: () => import('@/views/Dashboard.vue'),
         meta: { title: 'Dashboard' }
+      },
+      {
+        path: 'events',
+        name: 'dashboard-events',
+        component: () => import('@/views/EventManagement.vue')
       }
     ]
   }

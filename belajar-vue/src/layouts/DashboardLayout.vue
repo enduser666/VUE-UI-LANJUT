@@ -12,12 +12,8 @@ import { RouterView, RouterLink } from 'vue-router'
       </div>
 
       <nav class="rail-nav">
-        <router-link to="/dashboard" class="rail-link" exact-active-class="active">
-          Overview
-        </router-link>
-        <a href="#" class="rail-link" @click.prevent>My Events</a>
-        <a href="#" class="rail-link" @click.prevent>Attendees</a>
-        <a href="#" class="rail-link" @click.prevent>QR Check-in</a>
+        <router-link to="/dashboard" class="rail-link" exact-active-class="active">Dashboard</router-link>
+        <router-link to="/dashboard/events" class="rail-link" active-class="active">Event Management</router-link>
       </nav>
 
       <div class="rail-footer">
