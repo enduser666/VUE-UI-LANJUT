@@ -8,16 +8,19 @@ import CategoryFilter from '@/components/event/CategoryFilter.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 
 const router = useRouter();
-const { activeEvents } = useEvents();
+
+// MENGONSUMSI SINGLE SOURCE OF TRUTH (Hanya mengambil event yang berstatus aktif)
+const { activeEvents, isUserRegistered } = useEvents();
 
 const searchQuery = ref('');
 const selectedCategory = ref('All');
 const categories = ['All', 'Workshop', 'Meetup', 'Competition', 'Seminar', 'Conference'];
 
+// FILTERING REAKTIF TERHADAP DATA STATE AKTIF
 const filteredEvents = computed(() => {
   return activeEvents.value.filter(event => {
-    const q = searchQuery.value.toLowerCase();
-    const matchSearch = event.title.toLowerCase().includes(q) || event.loc.toLowerCase().includes(q);
+    const matchSearch = event.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+                        event.loc.toLowerCase().includes(searchQuery.value.toLowerCase());
     const matchCat = selectedCategory.value === 'All' || event.cat === selectedCategory.value;
     return matchSearch && matchCat;
   });
@@ -40,19 +43,29 @@ const handleViewDetail = (id) => {
       <CategoryFilter :categories="categories" v-model="selectedCategory" />
     </div>
 
+    <!-- GRID EVENT AKTIF -->
     <div v-if="filteredEvents.length > 0" class="event-grid">
-      <EventCard v-for="event in filteredEvents" :key="event.id" :event="event" @view-detail="handleViewDetail" />
+      <EventCard
+        v-for="event in filteredEvents"
+        :key="event.id"
+        :event="event"
+        :is-registered="isUserRegistered(event.id)"
+        @view-detail="handleViewDetail"
+      />
     </div>
 
+    <!-- FRIENDLY EMPTY STATE -->
     <div v-else class="empty-state">
-      <div class="empty-icon">🗓️</div>
+      <div class="empty-badge">CATALOG EMPTY</div>
       <h3>No Events Available Yet</h3>
       <p>
         There are currently no active events scheduled. Are you an organizer?
         Publish and manage your first event today through the Dashboard!
       </p>
       <div class="empty-action">
-        <AppButton variant="primary" @click="router.push('/dashboard')">Go to Organizer Dashboard &rarr;</AppButton>
+        <AppButton variant="primary" @click="router.push('/dashboard')">
+          Go to Organizer Dashboard &rarr;
+        </AppButton>
       </div>
     </div>
   </div>
@@ -62,11 +75,58 @@ const handleViewDetail = (id) => {
 .header-section { margin-bottom: var(--space-8); }
 .section-title { font-size: 2.2rem; margin-bottom: var(--space-2); }
 .section-desc { color: var(--text-muted); font-size: 1.1rem; }
-.filters-section { display: flex; gap: var(--space-4); margin-bottom: var(--space-6); flex-wrap: wrap; }
-.event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-6); }
-.empty-state { text-align: center; padding: var(--space-12) var(--space-8); color: var(--text-muted); background: white; border-radius: var(--space-4); border: 1px dashed var(--border-color); max-width: 600px; margin: var(--space-8) auto; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
-.empty-icon { font-size: 3.5rem; margin-bottom: var(--space-3); }
-.empty-state h3 { font-size: 1.5rem; color: var(--text-main); margin-bottom: var(--space-2); }
-.empty-state p { line-height: 1.6; margin-bottom: var(--space-6); font-size: 1rem; }
-.empty-action { display: flex; justify-content: center; }
+
+.filters-section {
+  margin-bottom: var(--space-6);
+}
+
+/* ADAPTIVE GRID */
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-6);
+}
+
+/* FRIENDLY EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: var(--space-12) var(--space-8);
+  color: var(--text-muted);
+  background: white;
+  border-radius: var(--space-4);
+  border: 1px dashed var(--border-color);
+  max-width: 600px;
+  margin: var(--space-8) auto;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+}
+
+.empty-badge {
+  display: inline-block;
+  background: var(--bg-light);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 4px 12px;
+  border-radius: 50px;
+  border: 1px solid var(--border-color);
+  margin-bottom: var(--space-4);
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  color: var(--text-main);
+  margin-bottom: var(--space-2);
+}
+
+.empty-state p {
+  line-height: 1.6;
+  margin-bottom: var(--space-6);
+  font-size: 1rem;
+}
+
+.empty-action {
+  display: flex;
+  justify-content: center;
+}
 </style>
